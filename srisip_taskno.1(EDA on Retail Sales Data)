@@ -1,0 +1,81 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+#1. Data Loading and Cleaning: Load the retail sales dataset
+data_path = '/content/retail_sales_dataset.csv'
+data = pd.read_csv(data_path)
+
+# Display the first few rows of the dataset
+print("Dataset Preview:")
+print(data.head())
+
+# Check dataset info
+data.info()  
+
+# Check for missing values
+missing_values = data.isnull().sum()
+print("\nMissing Values:")
+print(missing_values)
+
+# Handle missing values (if any)
+data = data.dropna()
+
+#2. Descriptive Statistics
+print("\nDescriptive Statistics:")
+print(data.describe())
+
+# Calculate additional statistics (e.g., mode)
+for col in data.select_dtypes(include=[np.number]).columns:
+    print(f"Mode of {col}: {data[col].mode()[0]}")
+
+#3. Time Series Analysis: Analyze sales trends
+if 'Date' in data.columns:
+    data['Date'] = pd.to_datetime(data['Date'])
+    data = data.sort_values(by='Date')
+
+    # Aggregate sales by date
+    if 'Total Amount' in data.columns:
+        sales_trend = data.groupby('Date')['Total Amount'].sum()
+        plt.figure(figsize=(12, 6))
+        plt.plot(sales_trend, marker='o', color='blue')
+        plt.title('Sales Trend Over Time')
+        plt.xlabel('Date')
+        plt.ylabel('Total Amount')
+        plt.grid()
+        plt.show()
+
+#4. Customer and Product Analysis
+if 'Gender' in data.columns and 'Total Amount' in data.columns:
+    gender_sales = data.groupby('Gender')['Total Amount'].sum()
+    plt.figure(figsize=(6, 4))
+    gender_sales.plot(kind='bar', color=['skyblue', 'salmon'])
+    plt.title('Total Amount by Gender')
+    plt.xlabel('Gender')
+    plt.ylabel('Total Amount')
+    plt.show()
+
+if 'Product Category' in data.columns and 'Total Amount' in data.columns:
+    category_sales = data.groupby('Product Category')['Total Amount'].sum().sort_values(ascending=False)
+    plt.figure(figsize=(10, 6))
+    category_sales.plot(kind='bar', color='orange')
+    plt.title('Total Amount by Product Category')
+    plt.xlabel('Product Category')
+    plt.ylabel('Total Amount')
+    plt.show()
+
+#5. Visualization: Total Amount Distribution
+plt.figure(figsize=(8, 6))
+sns.histplot(data['Total Amount'], kde=True, bins=30, color='purple')
+plt.title('Distribution of Total Amount')
+plt.xlabel('Total Amount')
+plt.ylabel('Frequency')
+plt.show()
+
+#6. Recommendations
+print("\nRecommendations based on EDA:")
+print("1. Focus on high-revenue product categories to boost sales.")
+print("2. Tailor marketing campaigns based on gender purchasing patterns.")
+print("3. Monitor time series trends to identify seasonal sales peaks.")
